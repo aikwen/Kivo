@@ -1,0 +1,67 @@
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Native extensions
+*.so
+*.pyd
+*.dll
+
+# Distribution and packaging
+build/
+dist/
+site/
+*.egg-info/
+.eggs/
+*.egg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Hatch
+.hatch/
+.hatch_build/
+
+# Test and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+
+# Type checking and linting
+.mypy_cache/
+.pyright/
+.ruff_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Operating systems
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Qt generated files
+*.qm
+*.qrc.py
+*_rc.py
+ui_*.py
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
