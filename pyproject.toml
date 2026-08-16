@@ -23,7 +23,11 @@ classifiers = [
 ]
 dependencies = [
   "PySide6>=6.8,<7",
+  "typer>=0.16,<1",
 ]
+
+[project.scripts]
+kivo = "kivo.cli:app"
 
 [project.urls]
 Documentation = "https://github.com/aikwen/kivo#readme"
