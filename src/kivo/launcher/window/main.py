@@ -8,7 +8,7 @@ from .ui import (
     CONTENT_SPACING,
     FRAME_BORDER_WIDTH,
     SEARCH_HEIGHT,
-    WINDOW_MARGIN,
+    SHADOW_MARGIN,
     LauncherWindowUI,
 )
 
@@ -46,6 +46,15 @@ class LauncherWindow(LauncherWindowUI):
             Qt.FocusReason.ActiveWindowFocusReason
         )
         self.search.selectAll()
+
+    def changeEvent(self, event) -> None:
+        super().changeEvent(event)
+
+        if (
+                event.type() == QEvent.Type.ActivationChange
+                and not self.isActiveWindow()
+        ):
+            self.hide()
 
     def eventFilter(
         self,
@@ -113,7 +122,7 @@ class LauncherWindow(LauncherWindowUI):
 
         window_height = (
             frame_height
-            + WINDOW_MARGIN * 2
+            + SHADOW_MARGIN * 2
         )
 
         self.frame.setFixedHeight(frame_height)
@@ -140,7 +149,12 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     window = LauncherWindow()
-    window.resize(570, 63)
+    window.resize(
+        570,
+        SEARCH_HEIGHT
+        + FRAME_BORDER_WIDTH * 2
+        + SHADOW_MARGIN * 2,
+    )
 
     screen = app.primaryScreen()
     if screen is not None:
