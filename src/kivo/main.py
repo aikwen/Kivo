@@ -1,5 +1,6 @@
 import sys
 
+from PySide6.QtGui import QCursor
 from PySide6.QtWidgets import QApplication
 
 from kivo.hotkey.main import GlobalHotkey
@@ -39,7 +40,13 @@ def run() -> int:
     hotkey = GlobalHotkey()
 
     def move_launcher() -> None:
-        screen = app.primaryScreen()
+        # 根据鼠标当前位置选择目标屏幕。
+        screen = app.screenAt(QCursor.pos())
+
+        # 获取不到时回退到主屏。
+        if screen is None:
+            screen = app.primaryScreen()
+
         if screen is None:
             return
 

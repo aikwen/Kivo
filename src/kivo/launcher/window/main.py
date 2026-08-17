@@ -13,10 +13,6 @@ from .ui import (
 )
 
 
-LAUNCHER_X_RATIO = 0.41
-LAUNCHER_Y_RATIO = 0.34
-
-
 class LauncherWindow(LauncherWindowUI):
     card_activated = Signal(str)
 
@@ -31,7 +27,10 @@ class LauncherWindow(LauncherWindowUI):
         self.card_list.activated.connect(self.card_activated)
 
     def set_cards(self, cards: list[str]) -> None:
-        self._cards = cards
+        self._cards = sorted(
+            cards,
+            key=lambda card: card.lower(),
+        )
 
         # Card registry 更新后，按照当前 query 重新过滤。
         self._on_search_changed(self.search.text())
@@ -51,9 +50,10 @@ class LauncherWindow(LauncherWindowUI):
         super().changeEvent(event)
 
         if (
-                event.type() == QEvent.Type.ActivationChange
-                and not self.isActiveWindow()
+            event.type() == QEvent.Type.ActivationChange
+            and not self.isActiveWindow()
         ):
+            self.search.clear()
             self.hide()
 
     def eventFilter(
@@ -83,6 +83,7 @@ class LauncherWindow(LauncherWindowUI):
                     return True
 
                 if key == Qt.Key.Key_Escape:
+                    self.search.clear()
                     self.hide()
                     return True
 
@@ -92,8 +93,8 @@ class LauncherWindow(LauncherWindowUI):
         query = text.strip().lower()
 
         if not query:
-            self.card_list.set_cards([])
-            self.search.set_expanded(False)
+            self.card_list.set_cards(self._cards)
+            self.search.set_expanded(bool(self._cards))
             self._update_height()
             return
 
@@ -103,10 +104,8 @@ class LauncherWindow(LauncherWindowUI):
             if query in card.lower()
         ]
 
-        has_results = bool(results)
-
         self.card_list.set_cards(results)
-        self.search.set_expanded(has_results)
+        self.search.set_expanded(bool(results))
 
         self._update_height()
 
@@ -116,7 +115,7 @@ class LauncherWindow(LauncherWindowUI):
             + FRAME_BORDER_WIDTH * 2
         )
 
-        if self.card_list.isVisible():
+        if not self.card_list.isHidden():
             frame_height += CONTENT_SPACING
             frame_height += self.card_list.height()
 
@@ -155,19 +154,6 @@ if __name__ == "__main__":
         + FRAME_BORDER_WIDTH * 2
         + SHADOW_MARGIN * 2,
     )
-
-    screen = app.primaryScreen()
-    if screen is not None:
-        geometry = screen.availableGeometry()
-
-        x = geometry.x() + int(
-            geometry.width() * LAUNCHER_X_RATIO
-        )
-        y = geometry.y() + int(
-            geometry.height() * LAUNCHER_Y_RATIO
-        )
-
-        window.move(x, y)
 
     window.set_cards(
         [

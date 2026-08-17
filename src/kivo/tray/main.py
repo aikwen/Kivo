@@ -1,11 +1,11 @@
 import sys
+from importlib.resources import files
 
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QMenu,
-    QStyle,
     QSystemTrayIcon,
 )
 
@@ -16,31 +16,33 @@ class Tray(QObject):
 
     def __init__(
         self,
-        icon: QIcon | None = None,
         parent: QObject | None = None,
     ) -> None:
         super().__init__(parent)
 
-        if icon is None:
-            app = QApplication.instance()
-            if app is None:
-                raise RuntimeError("QApplication must be created before Tray.")
+        icon_path = files(
+            "kivo.resources.icons"
+        ).joinpath(
+            "tray.ico"
+        )
 
-            icon = app.style().standardIcon(
-                QStyle.StandardPixmap.SP_ComputerIcon
-            )
+        icon = QIcon(str(icon_path))
 
         self._tray = QSystemTrayIcon(icon, self)
 
         self._menu = QMenu()
 
         self._exit_action = QAction("Exit", self._menu)
-        self._exit_action.triggered.connect(self.exit_requested)
+        self._exit_action.triggered.connect(
+            self.exit_requested
+        )
 
         self._menu.addAction(self._exit_action)
 
         self._tray.setContextMenu(self._menu)
-        self._tray.activated.connect(self._on_activated)
+        self._tray.activated.connect(
+            self._on_activated
+        )
 
     def show(self) -> None:
         self._tray.show()
