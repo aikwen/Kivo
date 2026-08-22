@@ -1,10 +1,9 @@
-import queue
 import subprocess
 import sys
 import threading
 from typing import Any
 
-from PySide6.QtCore import QObject, QTimer, Signal
+from PySide6.QtCore import QObject, Signal
 
 from kivo.ipc.json_channel import JsonChannel
 
@@ -17,15 +16,7 @@ class CardClient(QObject):
 
         self._process: subprocess.Popen[str] | None = None
         self._channel: JsonChannel | None = None
-
-        self._messages: queue.Queue[Any] = queue.Queue()
         self._reader_thread: threading.Thread | None = None
-
-        self._message_timer = QTimer(self)
-        self._message_timer.setInterval(20)
-        self._message_timer.timeout.connect(
-            self._process_messages
-        )
 
     def start(self) -> None:
         if self._process is not None:
@@ -47,7 +38,7 @@ class CardClient(QObject):
         if process.stdin is None or process.stdout is None:
             process.terminate()
             raise RuntimeError(
-                "Failed to create Host communication pipes."
+                "Failed to create Card Manager communication pipes."
             )
 
         self._process = process
@@ -62,11 +53,7 @@ class CardClient(QObject):
         )
         self._reader_thread.start()
 
-        self._message_timer.start()
-
     def stop(self) -> None:
-        self._message_timer.stop()
-
         process = self._process
 
         if process is None:
@@ -103,15 +90,6 @@ class CardClient(QObject):
             message = channel.recv()
 
             if message is None:
-                break
-
-            self._messages.put(message)
-
-    def _process_messages(self) -> None:
-        while True:
-            try:
-                message = self._messages.get_nowait()
-            except queue.Empty:
                 break
 
             self.message_received.emit(message)
