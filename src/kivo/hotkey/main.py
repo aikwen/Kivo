@@ -57,9 +57,9 @@ class GlobalHotkey(QObject):
         self._registered = False
         self._filter = _HotkeyEventFilter(self)
 
-    def register(self) -> None:
+    def register(self) -> bool:
         if self._registered:
-            return
+            return True
 
         success = user32.RegisterHotKey(
             None,
@@ -69,11 +69,11 @@ class GlobalHotkey(QObject):
         )
 
         if not success:
-            raise RuntimeError(
-                "Failed to register global hotkey: Shift+Alt+K"
-            )
+            return False
 
         self._registered = True
+
+        return True
 
     def unregister(self) -> None:
         if not self._registered:
