@@ -161,9 +161,7 @@ if __name__ == "__main__":
     window = LauncherWindow()
     window.resize(
         LauncherWindow.Style.width,
-        Search.Style.height
-        + LauncherWindowUI.Style.frame_border_width * 2
-        + LauncherWindowUI.Style.shadow_margin * 2,
+        LauncherWindow.Style.height,
     )
 
     window.set_cards(

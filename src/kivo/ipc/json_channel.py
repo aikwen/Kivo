@@ -1,12 +1,12 @@
 import json
-from typing import Any, TextIO
+from typing import IO, Any
 
 
 class JsonChannel:
     def __init__(
         self,
-        reader: TextIO,
-        writer: TextIO,
+        reader: IO[str],
+        writer: IO[str],
     ) -> None:
         self._reader = reader
         self._writer = writer
