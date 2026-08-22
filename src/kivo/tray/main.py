@@ -1,5 +1,4 @@
 import sys
-from importlib.resources import files
 
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtGui import QAction, QIcon
@@ -8,6 +7,8 @@ from PySide6.QtWidgets import (
     QMenu,
     QSystemTrayIcon,
 )
+
+from kivo.resources.loader import resource_path
 
 
 class Tray(QObject):
@@ -20,19 +21,20 @@ class Tray(QObject):
     ) -> None:
         super().__init__(parent)
 
-        icon_path = files(
-            "kivo.resources.icons"
-        ).joinpath(
-            "tray.ico"
-        )
-
-        icon = QIcon(str(icon_path))
+        with resource_path(
+            "icons",
+            "tray.ico",
+        ) as icon_path:
+            icon = QIcon(str(icon_path))
 
         self._tray = QSystemTrayIcon(icon, self)
 
         self._menu = QMenu()
 
-        self._exit_action = QAction("Exit", self._menu)
+        self._exit_action = QAction(
+            "Exit",
+            self._menu,
+        )
         self._exit_action.triggered.connect(
             self.exit_requested
         )
@@ -54,7 +56,10 @@ class Tray(QObject):
         self,
         reason: QSystemTrayIcon.ActivationReason,
     ) -> None:
-        if reason == QSystemTrayIcon.ActivationReason.Trigger:
+        if (
+            reason
+            == QSystemTrayIcon.ActivationReason.Trigger
+        ):
             self.activated.emit()
 
 

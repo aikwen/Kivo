@@ -1,5 +1,8 @@
 #include <windows.h>
+#include <shellapi.h>
+
 #pragma comment(lib, "User32.lib")
+#pragma comment(lib, "Shell32.lib")
 
 #include <filesystem>
 #include <string>
@@ -18,60 +21,80 @@ static void show_error(
 }
 
 
+// Kivo executor:
+// 1. If a Python interpreter is passed as the first argument,
+//    use it to start Kivo.
+// 2. Otherwise, load the interpreter configured by `kivo setup`.
+// 3. Prefer pythonw.exe on Windows to avoid opening a console window.
 int WINAPI wWinMain(
     HINSTANCE,
     HINSTANCE,
     PWSTR,
     int
 ) {
-    wchar_t local_app_data[MAX_PATH];
+    std::filesystem::path executable_path;
 
-    DWORD length = GetEnvironmentVariableW(
-        L"LOCALAPPDATA",
-        local_app_data,
-        MAX_PATH
+    int argc = 0;
+    LPWSTR* argv = CommandLineToArgvW(
+        GetCommandLineW(),
+        &argc
     );
 
-    if (length == 0 || length >= MAX_PATH) {
-        show_error(
-            L"Failed to locate LOCALAPPDATA."
-        );
-        return 1;
+    if (argv != nullptr && argc >= 2) {
+        executable_path = argv[1];
     }
 
-    std::filesystem::path config_path =
-        std::filesystem::path(local_app_data)
-        / L"Kivo"
-        / L"config.ini";
-
-    wchar_t python_path[MAX_PATH];
-
-    DWORD python_length = GetPrivateProfileStringW(
-        L"runtime",
-        L"python",
-        L"",
-        python_path,
-        MAX_PATH,
-        config_path.c_str()
-    );
-
-    if (python_length == 0) {
-        show_error(
-            L"Kivo is not configured.\n\n"
-            L"Run `kivo setup` first."
-        );
-        return 2;
+    if (argv != nullptr) {
+        LocalFree(argv);
     }
 
-    std::filesystem::path executable_path(
-        python_path
-    );
+    if (executable_path.empty()) {
+        wchar_t local_app_data[MAX_PATH];
+
+        DWORD length = GetEnvironmentVariableW(
+            L"LOCALAPPDATA",
+            local_app_data,
+            MAX_PATH
+        );
+
+        if (length == 0 || length >= MAX_PATH) {
+            show_error(
+                L"Failed to locate LOCALAPPDATA."
+            );
+            return 1;
+        }
+
+        std::filesystem::path config_path =
+            std::filesystem::path(local_app_data)
+            / L"Kivo"
+            / L"config.ini";
+
+        wchar_t python_path[MAX_PATH];
+
+        DWORD python_length = GetPrivateProfileStringW(
+            L"runtime",
+            L"python",
+            L"",
+            python_path,
+            MAX_PATH,
+            config_path.c_str()
+        );
+
+        if (python_length == 0) {
+            show_error(
+                L"Kivo is not configured.\n\n"
+                L"Run `kivo setup` first."
+            );
+            return 2;
+        }
+
+        executable_path = python_path;
+    }
 
     if (!std::filesystem::exists(executable_path)) {
         show_error(
-            L"The configured Python interpreter "
-            L"does not exist.\n\n"
-            L"Run `kivo setup` again."
+            L"The Python interpreter does not exist.\n\n"
+            L"Run `kivo setup` again if necessary."
         );
         return 3;
     }

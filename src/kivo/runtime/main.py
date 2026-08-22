@@ -75,11 +75,7 @@ class KivoRuntime:
             }
         )
 
-    def _toggle_launcher(self) -> None:
-        if self.launcher.isVisible():
-            self.launcher.hide()
-            return
-
+    def show_launcher(self) -> None:
         move_widget_to_cursor_screen(
             self.launcher,
             LauncherWindow.Style.x_ratio,
@@ -89,3 +85,10 @@ class KivoRuntime:
         self.launcher.show()
         self.launcher.raise_()
         self.launcher.activateWindow()
+
+    def _toggle_launcher(self) -> None:
+        if self.launcher.isVisible():
+            self.launcher.hide()
+            return
+
+        self.show_launcher()

@@ -1,6 +1,8 @@
 import typer
 
 from kivo.__about__ import __version__
+from kivo.setup.windows import run, setup as setup_windows
+from kivo.utils.platform import is_windows
 
 
 app = typer.Typer(
@@ -13,9 +15,23 @@ app = typer.Typer(
 def main(ctx: typer.Context) -> None:
     """Start Kivo."""
     if ctx.invoked_subcommand is None:
-        from kivo.main import run
+        if not is_windows():
+            raise RuntimeError(
+                "Kivo currently supports Windows only."
+            )
 
-        raise typer.Exit(run())
+        run()
+
+
+@app.command()
+def setup() -> None:
+    """Set up Kivo."""
+    if not is_windows():
+        raise RuntimeError(
+            "Kivo currently supports Windows only."
+        )
+
+    setup_windows()
 
 
 @app.command()
