@@ -10,21 +10,20 @@ from .card_list.main import CardList
 from .search.main import Search
 
 
-SEARCH_HEIGHT = 57
-CONTENT_SPACING = 4
-
-FRAME_BACKGROUND = "#202124"
-FRAME_BORDER_COLOR = "#444444"
-FRAME_BORDER_WIDTH = 1
-FRAME_BORDER_RADIUS = 6
-
-SHADOW_MARGIN = 12
-SHADOW_SIZE = 10
-SHADOW_OFFSET_Y = 2
-SHADOW_MAX_ALPHA = 48
-
-
 class LauncherWindowUI(QWidget):
+    class Style:
+        content_spacing = 4
+
+        frame_background = "#202124"
+        frame_border_color = "#444444"
+        frame_border_width = 1
+        frame_border_radius = 6
+
+        shadow_margin = 12
+        shadow_size = 10
+        shadow_offset_y = 2
+        shadow_max_alpha = 48
+
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
 
@@ -41,32 +40,35 @@ class LauncherWindowUI(QWidget):
         self.frame.setStyleSheet(
             f"""
             QFrame#launcherFrame {{
-                background: {FRAME_BACKGROUND};
-                border: {FRAME_BORDER_WIDTH}px solid {FRAME_BORDER_COLOR};
-                border-radius: {FRAME_BORDER_RADIUS}px;
+                background: {LauncherWindowUI.Style.frame_background};
+                border: {LauncherWindowUI.Style.frame_border_width}px solid
+                        {LauncherWindowUI.Style.frame_border_color};
+                border-radius: {LauncherWindowUI.Style.frame_border_radius}px;
             }}
             """
         )
 
         self.search = Search(self.frame)
-        self.search.setFixedHeight(SEARCH_HEIGHT)
+        self.search.setFixedHeight(Search.Style.height)
 
         self.card_list = CardList(self.frame)
         self.card_list.hide()
 
         frame_layout = QVBoxLayout(self.frame)
         frame_layout.setContentsMargins(0, 0, 0, 0)
-        frame_layout.setSpacing(CONTENT_SPACING)
+        frame_layout.setSpacing(
+            LauncherWindowUI.Style.content_spacing
+        )
 
         frame_layout.addWidget(self.search)
         frame_layout.addWidget(self.card_list)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(
-            SHADOW_MARGIN,
-            SHADOW_MARGIN,
-            SHADOW_MARGIN,
-            SHADOW_MARGIN,
+            LauncherWindowUI.Style.shadow_margin,
+            LauncherWindowUI.Style.shadow_margin,
+            LauncherWindowUI.Style.shadow_margin,
+            LauncherWindowUI.Style.shadow_margin,
         )
         layout.setSpacing(0)
 
@@ -84,19 +86,26 @@ class LauncherWindowUI(QWidget):
 
         frame_rect = QRectF(self.frame.geometry())
 
-        for spread in range(SHADOW_SIZE, 0, -1):
-            ratio = spread / SHADOW_SIZE
+        for spread in range(
+            LauncherWindowUI.Style.shadow_size,
+            0,
+            -1,
+        ):
+            ratio = (
+                spread
+                / LauncherWindowUI.Style.shadow_size
+            )
 
             alpha = int(
-                SHADOW_MAX_ALPHA
+                LauncherWindowUI.Style.shadow_max_alpha
                 * (1.0 - ratio) ** 2
             )
 
             shadow_rect = frame_rect.adjusted(
                 -spread,
-                -spread + SHADOW_OFFSET_Y,
+                -spread + LauncherWindowUI.Style.shadow_offset_y,
                 spread,
-                spread + SHADOW_OFFSET_Y,
+                spread + LauncherWindowUI.Style.shadow_offset_y,
             )
 
             painter.setBrush(
@@ -110,6 +119,6 @@ class LauncherWindowUI(QWidget):
 
             painter.drawRoundedRect(
                 shadow_rect,
-                FRAME_BORDER_RADIUS + spread,
-                FRAME_BORDER_RADIUS + spread,
+                LauncherWindowUI.Style.frame_border_radius + spread,
+                LauncherWindowUI.Style.frame_border_radius + spread,
             )

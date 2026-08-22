@@ -7,13 +7,16 @@ from PySide6.QtWidgets import QApplication, QWidget
 from .ui import SearchUI
 
 
-DIVIDER_WIDTH_RATIO = 0.9
-DIVIDER_HEIGHT = 1
-DIVIDER_COLOR = "#444444"
-
-
 class Search(SearchUI):
     text_changed = Signal(str)
+
+    class Style:
+        width = 570
+        height = 57
+
+        divider_width_ratio = 0.9
+        divider_height = 1
+        divider_color = "#444444"
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -38,17 +41,17 @@ class Search(SearchUI):
         painter = QPainter(self)
 
         divider_width = round(
-            self.width() * DIVIDER_WIDTH_RATIO
+            self.width() * Search.Style.divider_width_ratio
         )
         x = (self.width() - divider_width) // 2
-        y = self.height() - DIVIDER_HEIGHT
+        y = self.height() - Search.Style.divider_height
 
         painter.fillRect(
             x,
             y,
             divider_width,
-            DIVIDER_HEIGHT,
-            QColor(DIVIDER_COLOR),
+            Search.Style.divider_height,
+            QColor(Search.Style.divider_color),
         )
 
     def focus(self) -> None:
@@ -59,7 +62,10 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     search = Search()
-    search.resize(570, 57)
+    search.resize(
+        Search.Style.width,
+        Search.Style.height,
+    )
 
     search.text_changed.connect(print)
 

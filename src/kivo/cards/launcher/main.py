@@ -4,17 +4,23 @@ from PySide6.QtCore import QEvent, QObject, Qt, Signal
 from PySide6.QtGui import QKeyEvent
 from PySide6.QtWidgets import QApplication, QWidget
 
-from .ui import (
-    CONTENT_SPACING,
-    FRAME_BORDER_WIDTH,
-    SEARCH_HEIGHT,
-    SHADOW_MARGIN,
-    LauncherWindowUI,
-)
+from .search.main import Search
+from .ui import LauncherWindowUI
 
 
 class LauncherWindow(LauncherWindowUI):
     card_activated = Signal(str)
+
+    class Style:
+        width = Search.Style.width
+        height = (
+            Search.Style.height
+            + LauncherWindowUI.Style.frame_border_width * 2
+            + LauncherWindowUI.Style.shadow_margin * 2
+        )
+
+        x_ratio = 0.41
+        y_ratio = 0.34
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -61,7 +67,10 @@ class LauncherWindow(LauncherWindowUI):
         watched: QObject,
         event: QEvent,
     ) -> bool:
-        if watched is self.search and event.type() == QEvent.Type.KeyPress:
+        if (
+            watched is self.search
+            and event.type() == QEvent.Type.KeyPress
+        ):
             key_event = event
 
             if isinstance(key_event, QKeyEvent):
@@ -111,17 +120,19 @@ class LauncherWindow(LauncherWindowUI):
 
     def _update_height(self) -> None:
         frame_height = (
-            SEARCH_HEIGHT
-            + FRAME_BORDER_WIDTH * 2
+            Search.Style.height
+            + LauncherWindowUI.Style.frame_border_width * 2
         )
 
         if not self.card_list.isHidden():
-            frame_height += CONTENT_SPACING
+            frame_height += (
+                LauncherWindowUI.Style.content_spacing
+            )
             frame_height += self.card_list.height()
 
         window_height = (
             frame_height
-            + SHADOW_MARGIN * 2
+            + LauncherWindowUI.Style.shadow_margin * 2
         )
 
         self.frame.setFixedHeight(frame_height)
@@ -149,10 +160,10 @@ if __name__ == "__main__":
 
     window = LauncherWindow()
     window.resize(
-        570,
-        SEARCH_HEIGHT
-        + FRAME_BORDER_WIDTH * 2
-        + SHADOW_MARGIN * 2,
+        LauncherWindow.Style.width,
+        Search.Style.height
+        + LauncherWindowUI.Style.frame_border_width * 2
+        + LauncherWindowUI.Style.shadow_margin * 2,
     )
 
     window.set_cards(

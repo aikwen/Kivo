@@ -3,13 +3,9 @@ import sys
 from PySide6.QtGui import QCursor
 from PySide6.QtWidgets import QApplication
 
+from kivo.cards.launcher.main import LauncherWindow
 from kivo.hotkey.main import GlobalHotkey
-from kivo.launcher.window.main import LauncherWindow
 from kivo.tray.main import Tray
-
-
-LAUNCHER_X_RATIO = 0.41
-LAUNCHER_Y_RATIO = 0.34
 
 
 def run() -> int:
@@ -19,7 +15,10 @@ def run() -> int:
     app.setQuitOnLastWindowClosed(False)
 
     launcher = LauncherWindow()
-    launcher.resize(570, 63)
+    launcher.resize(
+        LauncherWindow.Style.width,
+        LauncherWindow.Style.height,
+    )
 
     launcher.set_cards(
         [
@@ -53,10 +52,12 @@ def run() -> int:
         geometry = screen.availableGeometry()
 
         x = geometry.x() + int(
-            geometry.width() * LAUNCHER_X_RATIO
+            geometry.width()
+            * LauncherWindow.Style.x_ratio
         )
         y = geometry.y() + int(
-            geometry.height() * LAUNCHER_Y_RATIO
+            geometry.height()
+            * LauncherWindow.Style.y_ratio
         )
 
         launcher.move(x, y)

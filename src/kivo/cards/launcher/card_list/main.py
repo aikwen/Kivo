@@ -6,11 +6,12 @@ from PySide6.QtWidgets import QApplication, QWidget
 from .ui import CardListUI
 
 
-MAX_VISIBLE_ITEMS = 8
-
-
 class CardList(CardListUI):
     activated = Signal(str)
+
+    class Style:
+        width = 570
+        max_visible_items = 8
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
@@ -71,14 +72,14 @@ class CardList(CardListUI):
             self.hide()
             return
 
-        visible_count = min(count, MAX_VISIBLE_ITEMS)
-        item_height = self.card_delegate.config().item_height
+        visible_count = min(count, CardList.Style.max_visible_items)
+        item_height = self.card_delegate.Style.item_height
 
         self.setFixedHeight(
             visible_count * item_height
         )
 
-        if count > MAX_VISIBLE_ITEMS:
+        if count > CardList.Style.max_visible_items:
             self.setVerticalScrollBarPolicy(
                 Qt.ScrollBarPolicy.ScrollBarAlwaysOn
             )
@@ -100,7 +101,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     card_list = CardList()
-    card_list.resize(570, 0)
+    card_list.resize(CardList.Style.width, 0)
 
     card_list.set_cards(
         [
