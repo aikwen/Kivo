@@ -14,11 +14,10 @@ def run() -> int:
     runtime = KivoRuntime(app)
     runtime.start()
 
-    exit_code = app.exec()
-
-    runtime.stop()
-
-    return exit_code
+    try:
+        return app.exec()
+    finally:
+        runtime.stop()
 
 
 if __name__ == "__main__":
