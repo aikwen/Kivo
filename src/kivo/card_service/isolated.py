@@ -1,6 +1,6 @@
 import sys
 
-from PySide6.QtWidgets import QApplication, QWidget
+from PySide6.QtWidgets import QApplication
 
 from kivo.cards.collection import CardCollection
 
@@ -15,12 +15,6 @@ def run(card_id: str) -> None:
         )
 
     card = card_class(isolated=True)
-
-    if not isinstance(card, QWidget):
-        raise TypeError(
-            f"Card must be a QWidget: {card_id}"
-        )
-
     card.show()
 
     sys.exit(app.exec())

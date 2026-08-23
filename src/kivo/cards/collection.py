@@ -1,3 +1,4 @@
+from kivo.cards.card import Card
 
 
 class CardCollection:
@@ -6,9 +7,12 @@ class CardCollection:
         return list(cls._cards)
 
     @classmethod
-    def get(cls, card_id: str) -> type | None:
+    def get(
+        cls,
+        card_id: str,
+    ) -> type[Card] | None:
         return cls._cards.get(card_id)
 
-    _cards: dict[str, type] = {
+    _cards: dict[str, type[Card]] = {
 
     }

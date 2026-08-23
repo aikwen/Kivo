@@ -1,11 +1,10 @@
-from PySide6.QtWidgets import QWidget
-
+from kivo.cards.card import Card
 from kivo.cards.collection import CardCollection
 
 
 class CardManager:
     def __init__(self) -> None:
-        self._instances: dict[str, QWidget] = {}
+        self._instances: dict[str, Card] = {}
 
     def open(self, card_id: str) -> None:
         card = self._instances.get(card_id)
