@@ -1,3 +1,4 @@
+import os
 from typing import cast
 
 from PySide6.QtWidgets import QApplication
@@ -10,6 +11,7 @@ from kivo.card_service.message.card_list import (
 from kivo.card_service.message.card_open import CardOpenRequest
 from kivo.cards.launcher.main import LauncherWindow
 from kivo.hotkey.main import GlobalHotkey
+from kivo.runtime.debug_panel import DebugPanel
 from kivo.tray.main import Tray
 from kivo.utils.window import move_widget_to_cursor_screen
 
@@ -27,6 +29,8 @@ class KivoRuntime:
         self.tray = Tray()
         self.hotkey = GlobalHotkey()
         self.card_service_client = CardServiceClient()
+
+        self.debug_panel: DebugPanel | None = None
 
         self.card_service_client.message_received.connect(
             self._on_card_service_message
@@ -62,6 +66,10 @@ class KivoRuntime:
 
         self.hotkey.register()
         self.tray.show()
+
+        if os.getenv("KIVO_DEBUG") == "1":
+            self.debug_panel = DebugPanel(self)
+            self.debug_panel.show()
 
     def stop(self) -> None:
         self.hotkey.unregister()

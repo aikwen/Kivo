@@ -1,4 +1,5 @@
 import queue
+import subprocess
 import sys
 import threading
 from typing import Any, cast
@@ -6,13 +7,15 @@ from typing import Any, cast
 from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QApplication
 
-from .ipc.json_channel import JsonChannel
+from kivo.card_service.card_manager import CardManager
 from kivo.card_service.message.card_list import (
     CardListRequest,
     CardListResponse,
 )
 from kivo.card_service.message.card_open import CardOpenRequest
 from kivo.cards.collection import CardCollection
+
+from .ipc.json_channel import JsonChannel
 
 
 _STOP = object()
@@ -34,6 +37,8 @@ class CardService(QObject):
 
         self._reader_thread: threading.Thread | None = None
         self._writer_thread: threading.Thread | None = None
+
+        self._card_manager = CardManager()
 
         self.message_received.connect(self._handle_message)
         self.disconnected.connect(QApplication.quit)
@@ -100,8 +105,8 @@ class CardService(QObject):
             )
 
     def _handle_card_list(
-            self,
-            request: CardListRequest,
+        self,
+        request: CardListRequest,
     ) -> None:
         response: CardListResponse = {
             "action": "card_list",
@@ -111,14 +116,29 @@ class CardService(QObject):
         self.send(response)
 
     def _handle_card_open(
-            self,
-            request: CardOpenRequest,
+        self,
+        request: CardOpenRequest,
     ) -> None:
         data = request["data"]
+
         card_id = data["card"]
         isolated = data["isolated"]
 
-        # TODO: Open card in the default process or an isolated process.
+        if isolated:
+            subprocess.Popen(
+                [
+                    sys.executable,
+                    "-m",
+                    "kivo.card_service.isolated",
+                    card_id,
+                ],
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=None,
+            )
+            return
+
+        self._card_manager.open(card_id)
 
 
 def run() -> None:
