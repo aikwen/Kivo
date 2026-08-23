@@ -9,7 +9,7 @@ from .ui import LauncherWindowUI
 
 
 class LauncherWindow(LauncherWindowUI):
-    card_activated = Signal(str)
+    card_activated = Signal(str, bool)
 
     class Style:
         width = Search.Style.width
@@ -30,7 +30,9 @@ class LauncherWindow(LauncherWindowUI):
         self.search.textChanged.connect(self._on_search_changed)
         self.search.installEventFilter(self)
 
-        self.card_list.activated.connect(self.card_activated)
+        self.card_list.activated.connect(
+            lambda card: self.card_activated.emit(card, False)
+        )
 
     def set_cards(self, cards: list[str]) -> None:
         self._cards = sorted(
@@ -88,7 +90,16 @@ class LauncherWindow(LauncherWindowUI):
                     Qt.Key.Key_Return,
                     Qt.Key.Key_Enter,
                 ):
-                    self._activate_current_card()
+                    modifiers = key_event.modifiers()
+
+                    isolated = bool(
+                        modifiers
+                        & Qt.KeyboardModifier.ControlModifier
+                        and modifiers
+                        & Qt.KeyboardModifier.AltModifier
+                    )
+
+                    self._activate_current_card(isolated)
                     return True
 
                 if key == Qt.Key.Key_Escape:
@@ -146,13 +157,16 @@ class LauncherWindow(LauncherWindowUI):
         if window_layout is not None:
             window_layout.activate()
 
-    def _activate_current_card(self) -> None:
+    def _activate_current_card(
+        self,
+        isolated: bool,
+    ) -> None:
         card = self.card_list.current_card()
 
         if card is None:
             return
 
-        self.card_activated.emit(card)
+        self.card_activated.emit(card, isolated)
 
 
 if __name__ == "__main__":
@@ -180,7 +194,9 @@ if __name__ == "__main__":
     )
 
     window.card_activated.connect(
-        lambda card: print(f"activate: {card}")
+        lambda card, isolated: print(
+            f"activate: {card}, isolated: {isolated}"
+        )
     )
 
     window.show()

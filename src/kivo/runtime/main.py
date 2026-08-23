@@ -76,6 +76,7 @@ class KivoRuntime:
         if action == "card_list":
             response = cast(CardListResponse, message)
             self.launcher.set_cards(response["data"])
+            return
 
     def _open_card(
         self,
