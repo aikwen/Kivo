@@ -76,33 +76,42 @@ class Tray(QObject):
 
         self._menu.adjustSize()
 
+        menu_width = self._menu.width()
+        menu_height = self._menu.height()
+
         center = geometry.center()
-        offset = 4
+
+        shadow_margin = self._menu.Style.shadow_margin
+        offset = 2
 
         if cursor.x() < center.x():
-            x = cursor.x() + offset
+            # 左侧：菜单左边靠近鼠标，向右展开
+            x = cursor.x() - shadow_margin + offset
         else:
+            # 右侧：菜单右边靠近鼠标，向左展开
             x = (
-                cursor.x()
-                - self._menu.width()
-                - offset
+                    cursor.x()
+                    - menu_width
+                    + shadow_margin
+                    - offset
             )
 
         if cursor.y() < center.y():
-            y = cursor.y() + offset
+            # 上侧：菜单顶部靠近鼠标，向下展开
+            y = cursor.y() - shadow_margin + offset
         else:
+            # 下侧：菜单底部靠近鼠标，向上展开
             y = (
-                cursor.y()
-                - self._menu.height()
-                - offset
+                    cursor.y()
+                    - menu_height
+                    + shadow_margin
+                    - offset
             )
 
         self._menu.move(x, y)
-
         self._menu.show()
         self._menu.raise_()
         self._menu.activateWindow()
-        self._menu.setFocus()
 
 
 if __name__ == "__main__":
