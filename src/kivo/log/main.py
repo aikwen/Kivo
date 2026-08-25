@@ -2,7 +2,10 @@ import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-from kivo.utils.path import app_data_dir
+from kivo.utils.path import (
+    app_data_dir,
+    card_data_dir,
+)
 
 
 class Log:
@@ -27,9 +30,7 @@ class Log:
         card_id: str,
     ) -> logging.Logger:
         path = (
-            app_data_dir("Kivo")
-            / "cards"
-            / card_id
+            card_data_dir(card_id)
             / "card.log"
         )
 

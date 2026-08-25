@@ -25,3 +25,17 @@ def app_data_dir(name: str) -> Path:
     raise NotImplementedError(
         f"Unsupported platform: {sys.platform}"
     )
+
+def card_data_dir(card_id: str) -> Path:
+    path = (
+        app_data_dir("Kivo")
+        / "cards"
+        / card_id
+    )
+
+    path.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    return path
