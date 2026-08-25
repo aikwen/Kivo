@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QLineEdit, QWidget
+from PySide6.QtWidgets import QApplication, QLineEdit, QWidget
 
 
 class SearchUI(QLineEdit):
@@ -9,7 +9,6 @@ class SearchUI(QLineEdit):
             border: none;
 
             padding: 10px 16px;
-            font-size: 15px;
         }
     """
 
@@ -17,4 +16,9 @@ class SearchUI(QLineEdit):
         super().__init__(parent)
 
         self.setPlaceholderText("Search cards...")
+
+        font = QApplication.font()
+        font.setPointSize(11)
+
+        self.setFont(font)
         self.setStyleSheet(self.STYLE)

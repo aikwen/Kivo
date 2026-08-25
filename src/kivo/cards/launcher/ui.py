@@ -30,6 +30,7 @@ class LauncherWindowUI(QWidget):
         self.setWindowFlags(
             Qt.WindowType.Tool
             | Qt.WindowType.FramelessWindowHint
+            | Qt.WindowType.WindowStaysOnTopHint
         )
         self.setAttribute(
             Qt.WidgetAttribute.WA_TranslucentBackground
