@@ -10,7 +10,11 @@ from kivo.card_service.message.card_list import (
 )
 from kivo.card_service.message.card_open import CardOpenRequest
 from kivo.cards.launcher.main import LauncherWindow
-from kivo.hotkey.main import GlobalHotkey
+from kivo.config.main import Config
+from kivo.hotkey.global_hotkey import (
+    DEFAULT_SHORTCUT,
+    GlobalHotkey,
+)
 from kivo.runtime.debug_panel import DebugPanel
 from kivo.tray.main import Tray
 from kivo.utils.window import move_widget_to_cursor_screen
@@ -27,7 +31,22 @@ class KivoRuntime:
         )
 
         self.tray = Tray()
-        self.hotkey = GlobalHotkey()
+
+        shortcut = Config.get(
+            "hotkey",
+            "launcher",
+            DEFAULT_SHORTCUT,
+        )
+
+        if not isinstance(shortcut, str):
+            raise RuntimeError(
+                "Invalid launcher hotkey configuration."
+            )
+
+        self.hotkey = GlobalHotkey(
+            shortcut
+        )
+
         self.card_service_client = CardServiceClient()
 
         self.debug_panel: DebugPanel | None = None
@@ -75,15 +94,23 @@ class KivoRuntime:
         self.hotkey.unregister()
         self.card_service_client.stop()
 
-    def _on_card_service_message(self, message: object) -> None:
+    def _on_card_service_message(
+        self,
+        message: object,
+    ) -> None:
         if not isinstance(message, dict):
             return
 
         action = message.get("action")
 
         if action == "card_list":
-            response = cast(CardListResponse, message)
-            self.launcher.set_cards(response["data"])
+            response = cast(
+                CardListResponse,
+                message,
+            )
+            self.launcher.set_cards(
+                response["data"]
+            )
             return
 
     def _open_card(
@@ -99,7 +126,9 @@ class KivoRuntime:
             },
         }
 
-        self.card_service_client.send(request)
+        self.card_service_client.send(
+            request
+        )
 
     def show_launcher(self) -> None:
         move_widget_to_cursor_screen(

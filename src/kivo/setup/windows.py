@@ -4,10 +4,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+from kivo.config.main import Config
 from kivo.resources.loader import resource_path
 from kivo.utils.env import env_path_add
-from kivo.utils.ini import ini_write
 from kivo.utils.path import app_data_dir
+from kivo.hotkey.global_hotkey import DEFAULT_SHORTCUT
 
 
 def run() -> None:
@@ -42,12 +43,16 @@ def setup() -> None:
             executor_path,
         )
 
-    ini_write(
-        kivo_home / "config.ini",
+    Config.set(
         "runtime",
-        {
-            "python": sys.executable,
-        },
+        "python",
+        sys.executable,
+    )
+
+    Config.set(
+        "hotkey",
+        "launcher",
+        DEFAULT_SHORTCUT,
     )
 
     env_path_add(bin_dir)
