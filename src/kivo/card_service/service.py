@@ -14,6 +14,7 @@ from kivo.card_service.message.card_list import (
 )
 from kivo.card_service.message.card_open import CardOpenRequest
 from kivo.cards.collection import CardCollection
+from kivo.log import Log
 
 from .ipc.json_channel import JsonChannel
 
@@ -27,6 +28,8 @@ class CardService(QObject):
 
     def __init__(self) -> None:
         super().__init__()
+
+        self._logger = Log.kivo()
 
         self._channel = JsonChannel(
             reader=sys.stdin,
@@ -69,23 +72,36 @@ class CardService(QObject):
             self._reader_thread.join()
 
     def _read_messages(self) -> None:
-        while True:
-            message = self._channel.recv()
+        try:
+            while True:
+                message = self._channel.recv()
 
-            if message is None:
-                self.disconnected.emit()
-                return
+                if message is None:
+                    self.disconnected.emit()
+                    return
 
-            self.message_received.emit(message)
+                self.message_received.emit(message)
+
+        except Exception:
+            self._logger.exception(
+                "CardService reader failed."
+            )
+            self.disconnected.emit()
 
     def _write_messages(self) -> None:
-        while True:
-            message = self._send_queue.get()
+        try:
+            while True:
+                message = self._send_queue.get()
 
-            if message is _STOP:
-                return
+                if message is _STOP:
+                    return
 
-            self._channel.send(message)
+                self._channel.send(message)
+
+        except Exception:
+            self._logger.exception(
+                "CardService writer failed."
+            )
 
     def _handle_message(self, message: Any) -> None:
         if not isinstance(message, dict):
@@ -125,17 +141,24 @@ class CardService(QObject):
         isolated = data["isolated"]
 
         if isolated:
-            subprocess.Popen(
-                [
-                    sys.executable,
-                    "-m",
-                    "kivo.card_service.isolated",
+            try:
+                subprocess.Popen(
+                    [
+                        sys.executable,
+                        "-m",
+                        "kivo.card_service.isolated",
+                        card_id,
+                    ],
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=None,
+                )
+            except Exception:
+                self._logger.exception(
+                    "Failed to start isolated card: %s",
                     card_id,
-                ],
-                stdin=subprocess.DEVNULL,
-                stdout=subprocess.DEVNULL,
-                stderr=None,
-            )
+                )
+
             return
 
         self._card_manager.open(card_id)

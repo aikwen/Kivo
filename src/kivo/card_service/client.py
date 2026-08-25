@@ -6,6 +6,8 @@ from typing import Any
 
 from PySide6.QtCore import QObject, Signal
 
+from kivo.log import Log
+
 from .ipc.json_channel import JsonChannel
 
 
@@ -17,6 +19,8 @@ class CardServiceClient(QObject):
 
     def __init__(self) -> None:
         super().__init__()
+
+        self._logger = Log.kivo()
 
         self._process: subprocess.Popen[str] | None = None
         self._channel: JsonChannel | None = None
@@ -32,22 +36,35 @@ class CardServiceClient(QObject):
         if self._running:
             return
 
-        process = subprocess.Popen(
-            [
-                sys.executable,
-                "-m",
-                "kivo.card_service.service",
-            ],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=None,
-            text=True,
-            bufsize=1,
-        )
+        try:
+            process = subprocess.Popen(
+                [
+                    sys.executable,
+                    "-m",
+                    "kivo.card_service.service",
+                ],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=None,
+                text=True,
+                bufsize=1,
+            )
+        except Exception:
+            self._logger.exception(
+                "Failed to start CardService process."
+            )
+            raise
 
         if process.stdin is None or process.stdout is None:
             process.terminate()
-            raise RuntimeError("Failed to create CardService IPC pipes.")
+
+            self._logger.error(
+                "Failed to create CardService IPC pipes."
+            )
+
+            raise RuntimeError(
+                "Failed to create CardService IPC pipes."
+            )
 
         self._process = process
         self._channel = JsonChannel(
@@ -71,7 +88,9 @@ class CardServiceClient(QObject):
 
     def send(self, message: Any) -> None:
         if not self._running:
-            raise RuntimeError("CardServiceClient is not running.")
+            raise RuntimeError(
+                "CardServiceClient is not running."
+            )
 
         self._send_queue.put(message)
 
@@ -109,23 +128,35 @@ class CardServiceClient(QObject):
         if channel is None:
             return
 
-        while True:
-            message = self._send_queue.get()
+        try:
+            while True:
+                message = self._send_queue.get()
 
-            if message is _STOP:
-                return
+                if message is _STOP:
+                    return
 
-            channel.send(message)
+                channel.send(message)
+
+        except Exception:
+            self._logger.exception(
+                "CardServiceClient writer failed."
+            )
 
     def _read_messages(self) -> None:
         channel = self._channel
         if channel is None:
             return
 
-        while True:
-            message = channel.recv()
+        try:
+            while True:
+                message = channel.recv()
 
-            if message is None:
-                return
+                if message is None:
+                    return
 
-            self.message_received.emit(message)
+                self.message_received.emit(message)
+
+        except Exception:
+            self._logger.exception(
+                "CardServiceClient reader failed."
+            )

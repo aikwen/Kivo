@@ -15,6 +15,7 @@ from kivo.hotkey.global_hotkey import (
     DEFAULT_SHORTCUT,
     GlobalHotkey,
 )
+from kivo.log import Log
 from kivo.runtime.debug_panel import DebugPanel
 from kivo.tray.main import Tray
 from kivo.utils.window import move_widget_to_cursor_screen
@@ -23,6 +24,7 @@ from kivo.utils.window import move_widget_to_cursor_screen
 class KivoRuntime:
     def __init__(self, app: QApplication) -> None:
         self.app = app
+        self.logger = Log.kivo()
 
         self.launcher = LauncherWindow()
         self.launcher.resize(
@@ -83,7 +85,12 @@ class KivoRuntime:
             self.hotkey.event_filter()
         )
 
-        self.hotkey.register()
+        if not self.hotkey.register():
+            self.logger.error(
+                "Failed to register global hotkey: %s",
+                self.hotkey.shortcut,
+            )
+
         self.tray.show()
 
         if os.getenv("KIVO_DEBUG") == "1":
