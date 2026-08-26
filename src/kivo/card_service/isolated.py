@@ -18,9 +18,7 @@ def run(card_id: str) -> None:
                 f"Card not found: {card_id}"
             )
 
-        card = card_class(
-            isolated=True
-        )
+        card = card_class()
         card.show()
 
         sys.exit(app.exec())
