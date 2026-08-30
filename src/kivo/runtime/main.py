@@ -1,4 +1,6 @@
 import os
+import subprocess
+import sys
 from typing import cast
 
 from PySide6.QtWidgets import QApplication
@@ -59,6 +61,10 @@ class KivoRuntime:
 
         self.launcher.card_activated.connect(
             self._open_card
+        )
+
+        self.launcher.isolated_card_activated.connect(
+            self._open_isolated_card
         )
 
         self.tray.activated.connect(
@@ -123,19 +129,39 @@ class KivoRuntime:
     def _open_card(
         self,
         card: str,
-        isolated: bool,
     ) -> None:
         request: CardOpenRequest = {
             "action": "card_open",
             "data": {
                 "card": card,
-                "isolated": isolated,
             },
         }
 
         self.card_service_client.send(
             request
         )
+
+    def _open_isolated_card(
+        self,
+        card: str,
+    ) -> None:
+        try:
+            subprocess.Popen(
+                [
+                    sys.executable,
+                    "-m",
+                    "kivo.card_service.isolated",
+                    card,
+                ],
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=None,
+            )
+        except Exception:
+            self.logger.exception(
+                "Failed to start isolated card: %s",
+                card,
+            )
 
     def show_launcher(self) -> None:
         move_widget_to_cursor_screen(

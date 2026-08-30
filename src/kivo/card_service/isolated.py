@@ -1,9 +1,12 @@
 import sys
 
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
 from kivo.cards.collection import CardCollection
 from kivo.log import Log
+from kivo.resources.loader import resource_path
 
 
 def run(card_id: str) -> None:
@@ -19,6 +22,33 @@ def run(card_id: str) -> None:
             )
 
         card = card_class()
+
+        card.setWindowFlags(
+            Qt.WindowType.Window
+            | Qt.WindowType.FramelessWindowHint
+            | Qt.WindowType.WindowStaysOnTopHint
+        )
+
+        with resource_path(
+            "icons",
+            "tray.ico",
+        ) as icon_path:
+            card.setWindowIcon(
+                QIcon(str(icon_path))
+            )
+
+        card.hide_requested.connect(
+            card.showMinimized
+        )
+
+        card.exit_requested.connect(
+            card.close
+        )
+
+        card.exit_requested.connect(
+            app.quit
+        )
+
         card.show()
 
         sys.exit(app.exec())

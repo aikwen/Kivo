@@ -18,6 +18,8 @@ from kivo.resources.loader import resource_path
 
 class Card(QWidget):
     settings_requested = Signal()
+    hide_requested = Signal()
+    exit_requested = Signal()
 
     class Style:
         frame_background = "#FFFFFF"
@@ -35,7 +37,7 @@ class Card(QWidget):
 
     def __init__(
         self,
-        title: str,
+        title: str = "",
         settings_enabled: bool = False,
         parent: QWidget | None = None,
     ) -> None:
@@ -157,11 +159,11 @@ class Card(QWidget):
         )
 
         self.title_bar.hide_requested.connect(
-            self.hide
+            self.hide_requested.emit
         )
 
         self.title_bar.exit_requested.connect(
-            self.close
+            self.exit_requested.emit
         )
 
     def paintEvent(
@@ -229,6 +231,12 @@ if __name__ == "__main__":
         settings_enabled=True,
     )
 
+    card.setWindowFlags(
+        Qt.WindowType.Window
+        | Qt.WindowType.FramelessWindowHint
+        | Qt.WindowType.WindowStaysOnTopHint
+    )
+
     card.resize(
         560,
         360,
@@ -263,6 +271,18 @@ if __name__ == "__main__":
 
     card.settings_requested.connect(
         lambda: print("设置")
+    )
+
+    card.hide_requested.connect(
+        card.showMinimized
+    )
+
+    card.exit_requested.connect(
+        card.close
+    )
+
+    card.exit_requested.connect(
+        app.quit
     )
 
     card.show()

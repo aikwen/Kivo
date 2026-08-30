@@ -1,5 +1,4 @@
 import queue
-import subprocess
 import sys
 import threading
 from typing import Any, cast
@@ -43,8 +42,12 @@ class CardService(QObject):
 
         self._card_manager = CardManager()
 
-        self.message_received.connect(self._handle_message)
-        self.disconnected.connect(QApplication.quit)
+        self.message_received.connect(
+            self._handle_message
+        )
+        self.disconnected.connect(
+            QApplication.quit
+        )
 
     def start(self) -> None:
         self._reader_thread = threading.Thread(
@@ -103,7 +106,10 @@ class CardService(QObject):
                 "CardService writer failed."
             )
 
-    def _handle_message(self, message: Any) -> None:
+    def _handle_message(
+        self,
+        message: Any,
+    ) -> None:
         if not isinstance(message, dict):
             return
 
@@ -135,33 +141,11 @@ class CardService(QObject):
         self,
         request: CardOpenRequest,
     ) -> None:
-        data = request["data"]
+        card_id = request["data"]["card"]
 
-        card_id = data["card"]
-        isolated = data["isolated"]
-
-        if isolated:
-            try:
-                subprocess.Popen(
-                    [
-                        sys.executable,
-                        "-m",
-                        "kivo.card_service.isolated",
-                        card_id,
-                    ],
-                    stdin=subprocess.DEVNULL,
-                    stdout=subprocess.DEVNULL,
-                    stderr=None,
-                )
-            except Exception:
-                self._logger.exception(
-                    "Failed to start isolated card: %s",
-                    card_id,
-                )
-
-            return
-
-        self._card_manager.open(card_id)
+        self._card_manager.open(
+            card_id
+        )
 
 
 def run() -> None:

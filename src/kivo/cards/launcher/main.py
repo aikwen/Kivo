@@ -9,7 +9,8 @@ from .ui import LauncherWindowUI
 
 
 class LauncherWindow(LauncherWindowUI):
-    card_activated = Signal(str, bool)
+    card_activated = Signal(str)
+    isolated_card_activated = Signal(str)
 
     class Style:
         width = Search.Style.width
@@ -31,7 +32,7 @@ class LauncherWindow(LauncherWindowUI):
         self.search.installEventFilter(self)
 
         self.card_list.activated.connect(
-            lambda card: self.card_activated.emit(card, False)
+            self.card_activated.emit
         )
 
     def set_cards(self, cards: list[str]) -> None:
@@ -99,7 +100,9 @@ class LauncherWindow(LauncherWindowUI):
                         & Qt.KeyboardModifier.AltModifier
                     )
 
-                    self._activate_current_card(isolated)
+                    self._activate_current_card(
+                        isolated
+                    )
                     return True
 
                 if key == Qt.Key.Key_Escape:
@@ -166,7 +169,15 @@ class LauncherWindow(LauncherWindowUI):
         if card is None:
             return
 
-        self.card_activated.emit(card, isolated)
+        if isolated:
+            self.isolated_card_activated.emit(
+                card
+            )
+            return
+
+        self.card_activated.emit(
+            card
+        )
 
 
 if __name__ == "__main__":
@@ -194,8 +205,14 @@ if __name__ == "__main__":
     )
 
     window.card_activated.connect(
-        lambda card, isolated: print(
-            f"activate: {card}, isolated: {isolated}"
+        lambda card: print(
+            f"activate: {card}"
+        )
+    )
+
+    window.isolated_card_activated.connect(
+        lambda card: print(
+            f"isolated activate: {card}"
         )
     )
 

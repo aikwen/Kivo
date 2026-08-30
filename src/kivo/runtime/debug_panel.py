@@ -49,9 +49,9 @@ class DebugPanel(QWidget):
         self.setWindowTitle("Kivo Debug")
 
         self.setWindowFlags(
-            Qt.WindowType.Tool
+            Qt.WindowType.Window
             | Qt.WindowType.WindowTitleHint
-            | Qt.WindowType.WindowCloseButtonHint
+            | Qt.WindowType.WindowMinimizeButtonHint
             | Qt.WindowType.WindowStaysOnTopHint
         )
 

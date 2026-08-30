@@ -22,15 +22,23 @@ class CardManager:
                 return
 
             try:
-                card = card_class(
-                    isolated=False
-                )
+                card = card_class()
             except Exception:
                 self._logger.exception(
                     "Failed to create card: %s",
                     card_id,
                 )
                 return
+
+            card.hide_requested.connect(
+                card.hide
+            )
+
+            card.exit_requested.connect(
+                lambda card_id=card_id: self._close(
+                    card_id
+                )
+            )
 
             self._instances[card_id] = card
 
@@ -41,5 +49,26 @@ class CardManager:
         except Exception:
             self._logger.exception(
                 "Failed to show card: %s",
+                card_id,
+            )
+
+    def _close(
+        self,
+        card_id: str,
+    ) -> None:
+        card = self._instances.get(card_id)
+
+        if card is None:
+            return
+
+        try:
+            if card.close():
+                self._instances.pop(
+                    card_id,
+                    None,
+                )
+        except Exception:
+            self._logger.exception(
+                "Failed to close card: %s",
                 card_id,
             )
