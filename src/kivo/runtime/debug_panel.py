@@ -1,6 +1,8 @@
+import os
 from collections import deque
 from typing import Any, TYPE_CHECKING
 
+import psutil
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtWidgets import (
     QFormLayout,
@@ -55,7 +57,7 @@ class DebugPanel(QWidget):
             | Qt.WindowType.WindowStaysOnTopHint
         )
 
-        self.resize(460, 520)
+        self.resize(460, 560)
 
     def _init_ui(self) -> None:
         layout = QVBoxLayout(self)
@@ -63,9 +65,19 @@ class DebugPanel(QWidget):
         runtime_group = QGroupBox("Runtime")
         runtime_layout = QFormLayout(runtime_group)
 
+        self._runtime_pid = QLabel()
+        self._runtime_memory = QLabel()
         self._launcher_visible = QLabel()
         self._hotkey_registered = QLabel()
 
+        runtime_layout.addRow(
+            "PID",
+            self._runtime_pid,
+        )
+        runtime_layout.addRow(
+            "Memory",
+            self._runtime_memory,
+        )
         runtime_layout.addRow(
             "Launcher visible",
             self._launcher_visible,
@@ -79,6 +91,7 @@ class DebugPanel(QWidget):
         service_layout = QFormLayout(service_group)
 
         self._service_pid = QLabel()
+        self._service_memory = QLabel()
         self._service_alive = QLabel()
         self._reader_alive = QLabel()
         self._writer_alive = QLabel()
@@ -87,6 +100,10 @@ class DebugPanel(QWidget):
         service_layout.addRow(
             "PID",
             self._service_pid,
+        )
+        service_layout.addRow(
+            "Memory",
+            self._service_memory,
         )
         service_layout.addRow(
             "Process alive",
@@ -134,6 +151,18 @@ class DebugPanel(QWidget):
         )
 
     def _refresh(self) -> None:
+        runtime_pid = os.getpid()
+
+        self._runtime_pid.setText(
+            str(runtime_pid)
+        )
+
+        self._runtime_memory.setText(
+            self._process_memory_text(
+                runtime_pid
+            )
+        )
+
         self._launcher_visible.setText(
             self._bool_text(
                 self._runtime.launcher.isVisible()
@@ -147,14 +176,23 @@ class DebugPanel(QWidget):
         )
 
         client = self._runtime.card_service_client
-
         process = client._process
 
         if process is None:
             self._service_pid.setText("-")
+            self._service_memory.setText("-")
             self._service_alive.setText("No")
         else:
-            self._service_pid.setText(str(process.pid))
+            self._service_pid.setText(
+                str(process.pid)
+            )
+
+            self._service_memory.setText(
+                self._process_memory_text(
+                    process.pid
+                )
+            )
+
             self._service_alive.setText(
                 self._bool_text(
                     process.poll() is None
@@ -194,7 +232,9 @@ class DebugPanel(QWidget):
         )
 
         scrollbar = self._message_log.verticalScrollBar()
-        scrollbar.setValue(scrollbar.maximum())
+        scrollbar.setValue(
+            scrollbar.maximum()
+        )
 
     @staticmethod
     def _bool_text(value: bool) -> str:
@@ -210,3 +250,20 @@ class DebugPanel(QWidget):
             if thread.is_alive()
             else "Stopped"
         )
+
+    @staticmethod
+    def _process_memory_text(
+        pid: int,
+    ) -> str:
+        try:
+            process = psutil.Process(pid)
+            rss = process.memory_info().rss
+
+            return (
+                f"{rss / 1024 / 1024:.1f} MB"
+            )
+        except (
+            psutil.NoSuchProcess,
+            psutil.AccessDenied,
+        ):
+            return "-"

@@ -42,8 +42,8 @@ class PopupMenu(PopupMenuUI):
         )
 
     def show_for(
-        self,
-        button: QWidget,
+            self,
+            button: QWidget,
     ) -> None:
         self.adjustSize()
 
@@ -52,8 +52,12 @@ class PopupMenu(PopupMenuUI):
         )
 
         position = QPoint(
-            anchor.x() - self.width(),
-            anchor.y() + 4,
+            anchor.x()
+            - self.width()
+            + self.Style.shadow_margin,
+            anchor.y()
+            + 4
+            - self.Style.shadow_margin,
         )
 
         self.move(position)

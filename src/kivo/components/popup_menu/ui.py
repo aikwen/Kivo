@@ -88,7 +88,7 @@ class MoreButton(QPushButton):
 
 class PopupMenuUI(QWidget):
     class Style:
-        width = 128
+        width = 96
 
         frame_background = "#FFFFFF"
         frame_border_color = "#E5E5EA"
@@ -100,11 +100,11 @@ class PopupMenuUI(QWidget):
         shadow_offset_y = 1
         shadow_alpha = 18
 
-        content_margin = 6
+        content_margin = 0
         content_spacing = 0
 
         item_height = 36
-        item_radius = 7
+        item_radius = 0
         item_padding_x = 12
 
         text_color = "#1C1C1E"
