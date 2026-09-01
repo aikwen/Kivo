@@ -1,3 +1,4 @@
+import shutil
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -44,6 +45,43 @@ class Config:
         section_data[key] = value
 
         cls._write(data)
+
+    @classmethod
+    def ensure(
+        cls,
+        template: Path,
+    ) -> None:
+        path = cls.path()
+
+        if path.exists():
+            return
+
+        path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        shutil.copy2(
+            template,
+            path,
+        )
+
+    @classmethod
+    def reset(
+        cls,
+        template: Path,
+    ) -> None:
+        path = cls.path()
+
+        path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        shutil.copy2(
+            template,
+            path,
+        )
 
     @classmethod
     def path(cls) -> Path:

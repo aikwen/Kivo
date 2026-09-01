@@ -24,14 +24,22 @@ def main(ctx: typer.Context) -> None:
 
 
 @app.command()
-def setup() -> None:
+def setup(
+    reset: bool = typer.Option(
+        False,
+        "--reset",
+        help="Reset Kivo configuration to defaults.",
+    ),
+) -> None:
     """Set up Kivo."""
     if not is_windows():
         raise RuntimeError(
             "Kivo currently supports Windows only."
         )
 
-    setup_windows()
+    setup_windows(
+        reset=reset,
+    )
 
 
 @app.command()

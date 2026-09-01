@@ -8,7 +8,6 @@ from kivo.config.main import Config
 from kivo.resources.loader import resource_path
 from kivo.utils.env import env_path_add
 from kivo.utils.path import app_data_dir
-from kivo.hotkey.global_hotkey import DEFAULT_SHORTCUT
 
 
 def run() -> None:
@@ -24,7 +23,9 @@ def run() -> None:
         )
 
 
-def setup() -> None:
+def setup(
+    reset: bool = False,
+) -> None:
     kivo_home = app_data_dir("Kivo")
     bin_dir = kivo_home / "bin"
     executor_path = bin_dir / "kivo.exe"
@@ -43,16 +44,23 @@ def setup() -> None:
             executor_path,
         )
 
+    with resource_path(
+        "config",
+        "win.toml",
+    ) as config_template:
+        if reset:
+            Config.reset(
+                config_template,
+            )
+        else:
+            Config.ensure(
+                config_template,
+            )
+
     Config.set(
         "runtime",
         "python",
         sys.executable,
-    )
-
-    Config.set(
-        "hotkey",
-        "launcher",
-        DEFAULT_SHORTCUT,
     )
 
     env_path_add(bin_dir)

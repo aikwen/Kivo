@@ -1,0 +1,5 @@
+[runtime]
+python = ""
+
+[hotkey]
+launcher = "Alt + Shift + K"
